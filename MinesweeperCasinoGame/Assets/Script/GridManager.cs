@@ -10,13 +10,13 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int height;
     [SerializeField] private float space;
 
-    private Button[,] grid;
+    private ButtonCell[,] grid;
 
     int currentRow = 0;
 
     void Start()
     {
-        grid = new Button[width, height];
+        grid = new ButtonCell[width, height];
 
         GenerateGrid();
     }
@@ -28,20 +28,17 @@ public class GridManager : MonoBehaviour
             var badCell = GetBadCell();
             for(int w = 0; w < width; w++)
             {
-                GameObject cell = Instantiate(button, new Vector3(w * space, h * space, 0), Quaternion.identity, gridPlaceholder.transform);
+                ButtonCell buttonCell = Instantiate(button, new Vector3(w * space, h * space, 0), Quaternion.identity, gridPlaceholder.transform).GetComponent<ButtonCell>();
 
-                grid[w, h] = cell.GetComponent<Button>();
+                grid[w, h] = buttonCell;
 
-                cell.name = $"Cell {w},{h}";
+                buttonCell.name = $"Cell {w},{h}";
 
-               Button cellButton = cell.GetComponent<Button>();
+                buttonCell.Initialize(w == badCell ? ButtonType.BOMB : ButtonType.KEY);
 
-                cellButton.interactable = w < width && h == currentRow;
+                buttonCell.SetInteractable(w < width && h == currentRow);
 
-                cellButton.onClick.AddListener(OnButtonClicked);
-
-                if (w == badCell)
-                    cell.GetComponent<Image>().color = Color.red;
+                buttonCell.OnClick.AddListener(OnButtonClicked);
             }
         }
     }
@@ -53,7 +50,7 @@ public class GridManager : MonoBehaviour
         {
             for(int w = 0; w < width; w++)
             {
-                grid[w, h].interactable = w < width && h == currentRow;
+                grid[w, h].SetInteractable(w < width && h == currentRow);
             }
         }
     }

@@ -48,18 +48,22 @@ public class ButtonCell : MonoBehaviour
 
     private void OnClicked()
     {
+        isActive = true;
+
         if (buttonType == ButtonType.BOMB)
+        {
             playerLoses?.Invoke();
+        }
         else
+        {
             playerFoundKey?.Invoke();
+        }
 
         RevealType();
     }
 
     public void RevealType()
     {
-        isActive = true;
-
         switch(buttonType)
         {
             case ButtonType.KEY:
@@ -68,6 +72,7 @@ public class ButtonCell : MonoBehaviour
                 break;
             case ButtonType.BOMB:
                 buttonImage.color = bombColor;
+                SetDisabledButtonColourAlpha(0.9f);
                 grenadeImage.SetActive(true);
                 break;
         }
@@ -81,9 +86,9 @@ public class ButtonCell : MonoBehaviour
         switch(buttonType)
         {
             case ButtonType.KEY:
-                buttonImage.color = new Color(keyColor.r, keyColor.g, keyColor.b, 0.5f);
-                keyImage.color = new Color(keyImage.color.r, keyImage.color.g, keyImage.color.b, 0.5f);
-                keyBackgroundImage.color = new Color(keyBackgroundImage.color.r, keyBackgroundImage.color.g, keyBackgroundImage.color.b, 0.5f);
+                buttonImage.color = new Color(keyColor.r, keyColor.g, keyColor.b, 0.4f);
+                keyImage.color = new Color(keyImage.color.r, keyImage.color.g, keyImage.color.b, 0.4f);
+                keyBackgroundImage.color = new Color(keyBackgroundImage.color.r, keyBackgroundImage.color.g, keyBackgroundImage.color.b, 0.4f);
                 keyImageContainer.SetActive(true);
                 break;
         }
@@ -92,7 +97,24 @@ public class ButtonCell : MonoBehaviour
     public void ResetCell()
     {
         buttonImage.color = Color.white;
+
+        isActive = false;
+
+        SetDisabledButtonColourAlpha(0.5f);
+
+        keyImage.color = new Color(keyImage.color.r, keyImage.color.g, keyImage.color.b, 1f);
+        keyBackgroundImage.color = new Color(keyBackgroundImage.color.r, keyBackgroundImage.color.g, keyBackgroundImage.color.b, 1f);
+
         keyImageContainer.SetActive(false);
         grenadeImage.SetActive(false);
+    }
+
+    private void SetDisabledButtonColourAlpha(float value)
+    {
+        var colours = button.colors;
+        var disabledColour = colours.disabledColor;
+        disabledColour.a = value;
+        colours.disabledColor = disabledColour;
+        button.colors = colours;
     }
 }

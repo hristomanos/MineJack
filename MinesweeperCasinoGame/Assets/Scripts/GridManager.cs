@@ -2,9 +2,31 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Runtime.InteropServices;
 
 public class GridManager : MonoBehaviour
 {
+#if UNITY_WEBGL && !UNITY_EDITOR
+    [DllImport("__Internal")]
+    private static extern void StartGame();
+
+    [DllImport("__Internal")]
+    private static extern void SelectDifficulty(int num);
+#else
+    private void StartGame()
+    {
+        OnBetButtonClicked();
+        Debug.Log("Would call JS  in WebGL");
+    }
+
+    private void SelectDifficulty(int num)
+    {
+        OnDifficultyChanged(num);
+        Debug.Log($"Would send {num} to Unity in WebGL");
+    }
+#endif
+
+
     [SerializeField] private GameObject button;
     [SerializeField] private GridLayoutGroup gridLayoutGroup_Easy;
     [SerializeField] private GridLayoutGroup gridLayoutGroup_Medium;
@@ -34,33 +56,17 @@ public class GridManager : MonoBehaviour
 
     private void Awake()
     {
-        difficultyDropdown.AddOptions(new List<string> { "Easy", "Medium", "Hard", "Expert", "Master" });
+        var optionsList = new List<string> { "Easy", "Medium", "Hard", "Expert", "Master" };
+        difficultyDropdown.AddOptions(optionsList);
         difficultyDropdown.value = (int) currentDifficulty;
         previousDifficulty = currentDifficulty;
-        difficultyDropdown.onValueChanged.AddListener(OnDifficultyChanged);
-        betButton.onClick.AddListener(OnBetButtonClicked);
+        difficultyDropdown.onValueChanged.AddListener(SelectDifficulty);
+        betButton.onClick.AddListener(StartGame);
         InitiliaseBaseOffDifficulty();
         GenerateGrid();
     }
 
-    private void OnBetButtonClicked()
-    {
-        difficultyDropdown.interactable = false;
-        betButton.interactable = false;
-
-        if(gameEnded)
-        {
-            ResetGrid();
-        }
-
-        for(int h = 0; h < height; h++)
-        {
-            for(int w = 0; w < width; w++)
-            {
-                grid[w, h].SetInteractable(h == currentRow);
-            }
-        }
-    }
+   
 
     private void GenerateGrid()
     {
@@ -94,7 +100,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    private void OnDifficultyChanged(int index)
+    public void OnDifficultyChanged(int index)
     {
         currentDifficulty = (Difficulty)index;
 
@@ -106,6 +112,25 @@ public class GridManager : MonoBehaviour
 
         InitiliaseBaseOffDifficulty();
         GenerateGrid();
+    }
+
+    public void OnBetButtonClicked()
+    {
+        difficultyDropdown.interactable = false;
+        betButton.interactable = false;
+
+        if(gameEnded)
+        {
+            ResetGrid();
+        }
+
+        for(int h = 0; h < height; h++)
+        {
+            for(int w = 0; w < width; w++)
+            {
+                grid[w, h].SetInteractable(h == currentRow);
+            }
+        }
     }
 
     private void InitiliaseBaseOffDifficulty()

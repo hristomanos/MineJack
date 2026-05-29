@@ -2,84 +2,70 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Runtime.InteropServices;
+using UnityEngine.Serialization;
+using WebGL;
 
 public class GridManager : MonoBehaviour
 {
-#if UNITY_WEBGL && !UNITY_EDITOR
-    [DllImport("__Internal")]
-    private static extern void StartGame();
-
-    [DllImport("__Internal")]
-    private static extern void SelectDifficulty(int num);
-#else
     private void StartGame()
     {
         OnBetButtonClicked();
-        Debug.Log("Would call JS  in WebGL");
+        WebGLBridge.NotifyGameStarted();
     }
-
+    
     private void SelectDifficulty(int num)
     {
         OnDifficultyChanged(num);
-        Debug.Log($"Would send {num} to Unity in WebGL");
+        WebGLBridge.NotifyDifficultySelected(num);
     }
-#endif
 
-
-    [SerializeField] private GameObject button;
-    [SerializeField] private GridLayoutGroup gridLayoutGroup_Easy;
-    [SerializeField] private GridLayoutGroup gridLayoutGroup_Medium;
-    [SerializeField] private GridLayoutGroup gridLayoutGroup_Hard;
-    [SerializeField] private GridLayoutGroup gridLayoutGroup_Expert;
-    [SerializeField] private GridLayoutGroup gridLayoutGroup_Master;
+    [FormerlySerializedAs("button")] [SerializeField] private GameObject buttonCellPrefab;
+    [SerializeField] private GridLayoutGroup easyGridLayoutGroup;
+    [SerializeField] private GridLayoutGroup mediumGridLayoutGroup;
+    [SerializeField] private GridLayoutGroup hardGridLayoutGroup;
+    [SerializeField] private GridLayoutGroup expertGridLayoutGroup;
+    [SerializeField] private GridLayoutGroup masterGridLayoutGroup;
 
     [SerializeField] private TMP_Dropdown difficultyDropdown;
     [SerializeField] private Button betButton;
 
+    [SerializeField] DifficultySettings[] difficultySettings;
+    
     private GridLayoutGroup currentGridLayoutGroup;
 
     private int minBombsPerRow = 1;
 
-    private Difficulty currentDifficulty = Difficulty.EASY;
-    private Difficulty previousDifficulty;
+    private Difficulty currentDifficulty = Difficulty.Easy;
 
     private int width;
     private int height = 9;
-    private float space = 1.2f;
 
     private ButtonCellPresenter[,] grid;
 
     private int currentRow = 0;
 
-    private bool gameEnded = false;
+    private GameState currentGameState = GameState.WaitingToStart;
 
     private void Awake()
     {
         var optionsList = new List<string> { "Easy", "Medium", "Hard", "Expert", "Master" };
         difficultyDropdown.AddOptions(optionsList);
         difficultyDropdown.value = (int) currentDifficulty;
-        previousDifficulty = currentDifficulty;
         difficultyDropdown.onValueChanged.AddListener(SelectDifficulty);
         betButton.onClick.AddListener(StartGame);
-        InitiliaseBaseOffDifficulty();
+        ApplyDifficultySettings();
         GenerateGrid();
     }
     
     private void GenerateGrid()
     {
-        for(int h = 0; h < height; h++)
+        for(int row = 0; row < height; row++)
         {
-            HashSet<int> bombCellIndices = new HashSet<int>();
+            var bombCellIndices = GenerateBombCellIndices();
 
-            while(bombCellIndices.Count < Mathf.Min(minBombsPerRow,width))
+            for(int column = 0; column < width; column++)
             {
-                bombCellIndices.Add(GetBombCellIndex());
-            }
-
-            for(int w = 0; w < width; w++)
-            {
-                ButtonCellPresenter buttonCellPresenter = Instantiate(button, new Vector3(w * space, h * space, 0), Quaternion.identity, currentGridLayoutGroup.transform).GetComponent<ButtonCellPresenter>();
+                ButtonCellPresenter buttonCellPresenter = Instantiate(buttonCellPrefab, currentGridLayoutGroup.transform).GetComponent<ButtonCellPresenter>();
 
                 buttonCellPresenter.gameObject.SetActive(false);
 
@@ -87,29 +73,39 @@ public class GridManager : MonoBehaviour
 
                 buttonCellPresenter.gameObject.SetActive(true);
 
-                grid[w, h] = buttonCellPresenter;
+                grid[column, row] = buttonCellPresenter;
 
-                ButtonType type = bombCellIndices.Contains(w) ? ButtonType.Bomb : ButtonType.Key;
+                CellType type = bombCellIndices.Contains(column) ? CellType.Bomb : CellType.Key;
 
-                buttonCellPresenter.name = $"Cell {w},{h} {type.ToString()}";
+                buttonCellPresenter.name = $"Cell {column},{row} {type.ToString()}";
 
-                buttonCellPresenter.Initialize(type, OnGameEnds, OnPlayerFoundKey);
+                buttonCellPresenter.Initialize(type, OnPlayerHitBomb, OnPlayerFoundKey);
             }
         }
     }
 
     public void OnDifficultyChanged(int index)
     {
-        currentDifficulty = (Difficulty)index;
+        Difficulty selectedDifficulty = (Difficulty)index;
 
-        if(previousDifficulty != currentDifficulty)
-        {
-            ClearGrid();
-            previousDifficulty = currentDifficulty;
-        }
+        if (selectedDifficulty == currentDifficulty)
+            return;
 
-        InitiliaseBaseOffDifficulty();
+        ClearGrid();
+        
+        currentDifficulty = selectedDifficulty;
+        
+        ApplyDifficultySettings();
         GenerateGrid();
+    }
+    
+    private void ClearGrid()
+    {
+        currentRow = 0;
+        foreach(Transform child in currentGridLayoutGroup.transform)
+        {
+            Destroy(child.gameObject);
+        }
     }
 
     public void OnBetButtonClicked()
@@ -117,48 +113,54 @@ public class GridManager : MonoBehaviour
         difficultyDropdown.interactable = false;
         betButton.interactable = false;
 
-        if(gameEnded)
+        if(currentGameState == GameState.GameOver)
         {
             ResetGrid();
         }
 
-        for(int h = 0; h < height; h++)
+        currentGameState = GameState.Playing;
+        SetOnlyCurrentRowInteractable();
+    }
+
+    private void SetOnlyCurrentRowInteractable()
+    {
+        for(int row = 0; row < height; row++)
         {
-            for(int w = 0; w < width; w++)
+            for(int column = 0; column < width; column++)
             {
-                grid[w, h].SetInteractable(h == currentRow);
+                grid[column, row].SetInteractable(row == currentRow);
             }
         }
     }
 
-    private void InitiliaseBaseOffDifficulty()
+    private void ApplyDifficultySettings()
     {
         switch(currentDifficulty)
         {
-            case Difficulty.EASY:
+            case Difficulty.Easy:
                 width = 4;
                 minBombsPerRow = 1;
-                currentGridLayoutGroup = gridLayoutGroup_Easy;
+                currentGridLayoutGroup = easyGridLayoutGroup;
                 break;
-            case Difficulty.MEDIUM:
+            case Difficulty.Medium:
                 width = 3;
                 minBombsPerRow = 1;
-                currentGridLayoutGroup = gridLayoutGroup_Medium;
+                currentGridLayoutGroup = mediumGridLayoutGroup;
                 break;
-            case Difficulty.HARD:
+            case Difficulty.Hard:
                 width = 2;
                 minBombsPerRow = 1;
-                currentGridLayoutGroup = gridLayoutGroup_Hard;
+                currentGridLayoutGroup = hardGridLayoutGroup;
                 break;
-            case Difficulty.EXPERT:
+            case Difficulty.Expert:
                 width = 3;
                 minBombsPerRow = 2;
-                currentGridLayoutGroup = gridLayoutGroup_Expert;
+                currentGridLayoutGroup = expertGridLayoutGroup;
                 break;
-            case Difficulty.MASTER:
+            case Difficulty.Master:
                 width = 4;
                 minBombsPerRow = 3;
-                currentGridLayoutGroup = gridLayoutGroup_Master;
+                currentGridLayoutGroup = masterGridLayoutGroup;
                 break;
             default:
                 width = 4;
@@ -175,32 +177,37 @@ public class GridManager : MonoBehaviour
 
         if(currentRow >= height)
         {
-            Debug.Log("Player Wins!");
-            OnGameEnds();
+            OnPlayerCompletedGrid();
             return;
         }
 
-        for(int h = 0; h < height; h++)
-        {
-            for(int w = 0; w < width; w++)
-            {
-                grid[w, h].SetInteractable(h == currentRow);
-            }
-        }
+        SetOnlyCurrentRowInteractable();
     }
 
-    private void OnGameEnds()
+    private void OnPlayerHitBomb()
     {
-        for(int h = 0; h < height; h++)
+        Debug.Log("Player Lost!");
+        EndGame();
+    }
+
+    private void OnPlayerCompletedGrid()
+    {
+        Debug.Log("Player Wins!");
+        EndGame();
+    }
+    
+    private void EndGame()
+    {
+        for(int row = 0; row < height; row++)
         {
-            for(int w = 0; w < width; w++)
+            for(int column = 0; column < width; column++)
             {
-                grid[w, h].RevealUnselectedType();
-                grid[w, h].SetInteractable(false);
+                grid[column, row].RevealUnselectedType();
+                grid[column, row].SetInteractable(false);
             }
         }
 
-        gameEnded = true;
+        currentGameState = GameState.GameOver;
         difficultyDropdown.interactable = true;
         betButton.interactable = true;
     }
@@ -210,35 +217,35 @@ public class GridManager : MonoBehaviour
         return Random.Range(0, width);
     }
 
-    private void ClearGrid()
-    {
-        currentRow = 0;
-        foreach(Transform child in currentGridLayoutGroup.transform)
-        {
-            Destroy(child.gameObject);
-        }
-    }
+    
 
     public void ResetGrid()
     {
-        gameEnded = false;
         currentRow = 0;
-        for(int h = 0; h < height; h++)
+        for(int row = 0; row < height; row++)
         {
-            HashSet<int> bombCellIndices = new HashSet<int>();
+            var bombCellIndices = GenerateBombCellIndices();
 
-            while(bombCellIndices.Count < Mathf.Min(minBombsPerRow, width))
+            for(int column = 0; column < width; column++)
             {
-                bombCellIndices.Add(GetBombCellIndex());
-            }
-
-            for(int w = 0; w < width; w++)
-            {
-                ButtonType type = bombCellIndices.Contains(w) ? ButtonType.Bomb : ButtonType.Key;
-                grid[w, h].Initialize(type, OnGameEnds, OnPlayerFoundKey);
-                grid[w, h].SetInteractable(h == currentRow);
-                grid[w, h].name = $"Cell {w},{h} {type.ToString()}";
+                CellType type = bombCellIndices.Contains(column) ? CellType.Bomb : CellType.Key;
+                grid[column, row].Initialize(type, EndGame, OnPlayerFoundKey);
+                grid[column, row].name = $"Cell {column},{row} {type.ToString()}";
             }
         }
+        
+        SetOnlyCurrentRowInteractable();
+    }
+
+    private HashSet<int> GenerateBombCellIndices()
+    {
+        HashSet<int> bombCellIndices = new HashSet<int>();
+
+        while(bombCellIndices.Count < Mathf.Min(minBombsPerRow, width))
+        {
+            bombCellIndices.Add(GetBombCellIndex());
+        }
+
+        return bombCellIndices;
     }
 }

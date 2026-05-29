@@ -44,10 +44,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74c45400010335e469b66ba99d90ff61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
-  button: {fileID: 4723897153876549158, guid: 939a578d9e0b40f4fa89ca8621e1548e, type: 3}
-  gridLayoutGroup_Easy: {fileID: 0}
-  gridLayoutGroup_Medium: {fileID: 0}
-  gridLayoutGroup_Hard: {fileID: 0}
-  gridLayoutGroup_Expert: {fileID: 0}
-  gridLayoutGroup_Master: {fileID: 0}
-  difficulty: 0
+  buttonCellPrefab: {fileID: 4723897153876549158, guid: 939a578d9e0b40f4fa89ca8621e1548e, type: 3}
+  easyGridLayoutGroup: {fileID: 4101374794983154787, guid: 2f0c32edf28c3ae40a99a297c65dcb32, type: 3}
+  mediumGridLayoutGroup: {fileID: 2219825582437449467, guid: bee6300163b1b9e4ba500203ac98e3ef, type: 3}
+  hardGridLayoutGroup: {fileID: 8889329918596242462, guid: 2b32f2f440f27424ab0e870b95bb0948, type: 3}
+  expertGridLayoutGroup: {fileID: 6168959506352419288, guid: 215aecdb77a10e140bcc6a6b5adcdecf, type: 3}
+  masterGridLayoutGroup: {fileID: 8078492509121217595, guid: 1142851d0ccbf82428180f8be12fa182, type: 3}
+  difficultyDropdown: {fileID: 0}
+  betButton: {fileID: 0}
+  difficultySettings:
+  - difficulty: 0
+    width: 0
+    height: 0
+    bombsPerRow: 0
+    gridLayoutGroup: {fileID: 0}

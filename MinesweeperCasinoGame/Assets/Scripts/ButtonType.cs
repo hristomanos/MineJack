@@ -1,3 +1,5 @@
-using UnityEngine;
-
-public enum ButtonType { KEY, BOMB}
+public enum ButtonType
+{
+    Key, 
+    Bomb
+}

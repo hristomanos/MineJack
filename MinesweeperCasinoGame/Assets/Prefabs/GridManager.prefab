@@ -53,8 +53,8 @@ MonoBehaviour:
   difficultyDropdown: {fileID: 0}
   betButton: {fileID: 0}
   difficultySettings:
-  - difficulty: 0
-    width: 0
-    height: 0
-    bombsPerRow: 0
-    gridLayoutGroup: {fileID: 0}
+  - {fileID: 11400000, guid: dc974ddc78632504994b6902b00a1471, type: 2}
+  - {fileID: 11400000, guid: 505606ed1460d49459c3535ce25b1ebe, type: 2}
+  - {fileID: 11400000, guid: 4dc1b220e510fc94c99c6d0282390f72, type: 2}
+  - {fileID: 11400000, guid: 444159151e518834298c4e6acec358c3, type: 2}
+  - {fileID: 11400000, guid: 88eebec8739302d4bad2e09491284540, type: 2}

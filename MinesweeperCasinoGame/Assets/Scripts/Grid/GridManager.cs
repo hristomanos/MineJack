@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Config;
 using Core;
 using Grid.ButtonCell;
@@ -34,11 +35,14 @@ namespace Grid
         [SerializeField] private TMP_Dropdown difficultyDropdown;
         [SerializeField] private Button betButton;
 
-        [SerializeField] DifficultySettings[] difficultySettings;
-    
+        [SerializeField] private GameObject canvas;
+        [SerializeField] DifficultySettingsScriptableObject[] difficultySettings;
+        
+        
+        private Dictionary<Difficulty, DifficultySettingsScriptableObject> difficultySettingsDictionary = new();
         private GridLayoutGroup currentGridLayoutGroup;
 
-        private int minBombsPerRow = 1;
+        private int bombsPerRow = 1;
 
         private Difficulty currentDifficulty = Difficulty.Easy;
 
@@ -58,6 +62,7 @@ namespace Grid
             difficultyDropdown.value = (int) currentDifficulty;
             difficultyDropdown.onValueChanged.AddListener(SelectDifficulty);
             betButton.onClick.AddListener(StartGame);
+            InstantiateDifficultySettings();
             ApplyDifficultySettings();
             GenerateGrid();
         }
@@ -138,40 +143,23 @@ namespace Grid
             }
         }
 
+        private void InstantiateDifficultySettings()
+        {
+            foreach (var difficultySettingsScriptableObject in difficultySettings)
+            {
+                difficultySettingsScriptableObject.gridLayoutGroup = Instantiate(difficultySettingsScriptableObject.gridPrefab, canvas.transform).GetComponent<GridLayoutGroup>();
+            }
+            
+            difficultySettingsDictionary = difficultySettings.ToDictionary(x => x.difficulty, x => x);
+        }
+        
         private void ApplyDifficultySettings()
         {
-            switch(currentDifficulty)
-            {
-                case Difficulty.Easy:
-                    width = 4;
-                    minBombsPerRow = 1;
-                    currentGridLayoutGroup = easyGridLayoutGroup;
-                    break;
-                case Difficulty.Medium:
-                    width = 3;
-                    minBombsPerRow = 1;
-                    currentGridLayoutGroup = mediumGridLayoutGroup;
-                    break;
-                case Difficulty.Hard:
-                    width = 2;
-                    minBombsPerRow = 1;
-                    currentGridLayoutGroup = hardGridLayoutGroup;
-                    break;
-                case Difficulty.Expert:
-                    width = 3;
-                    minBombsPerRow = 2;
-                    currentGridLayoutGroup = expertGridLayoutGroup;
-                    break;
-                case Difficulty.Master:
-                    width = 4;
-                    minBombsPerRow = 3;
-                    currentGridLayoutGroup = masterGridLayoutGroup;
-                    break;
-                default:
-                    width = 4;
-                    minBombsPerRow = 1;
-                    break;
-            }
+            
+            currentGridLayoutGroup = difficultySettingsDictionary[currentDifficulty].gridLayoutGroup;
+            width = difficultySettingsDictionary[currentDifficulty].width;
+            height = difficultySettingsDictionary[currentDifficulty].height;
+            bombsPerRow = difficultySettingsDictionary[currentDifficulty].bombsPerRow;
 
             grid = new ButtonCellPresenter[width, height];
         }
@@ -222,8 +210,6 @@ namespace Grid
             return Random.Range(0, width);
         }
 
-    
-
         public void ResetGrid()
         {
             currentRow = 0;
@@ -246,7 +232,7 @@ namespace Grid
         {
             HashSet<int> bombCellIndices = new HashSet<int>();
 
-            while(bombCellIndices.Count < Mathf.Min(minBombsPerRow, width))
+            while(bombCellIndices.Count < Mathf.Min(bombsPerRow, width))
             {
                 bombCellIndices.Add(GetBombCellIndex());
             }

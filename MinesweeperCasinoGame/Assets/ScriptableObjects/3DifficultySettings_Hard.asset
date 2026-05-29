@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 646037f8269849429cab118b8158dca1, type: 3}
+  m_Name: 3DifficultySettings_Hard
+  m_EditorClassIdentifier: Assembly-CSharp::Config.DifficultySettingScriptableObject
+  difficulty: 2
+  width: 2
+  height: 9
+  bombsPerRow: 1
+  gridLayoutGroup: {fileID: 0}
+  gridPrefab: {fileID: 975930003809244271, guid: 2b32f2f440f27424ab0e870b95bb0948, type: 3}

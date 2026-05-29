@@ -17,11 +17,11 @@ public class ButtonCellView : MonoBehaviour
     [SerializeField, Range(0, 1)] private float defaultDisabledAlpha = 0.5f;
     
 
-    ButtonType type;
+    CellType type;
     
-    public void Initialize(ButtonType buttonType)
+    public void Initialize(CellType cellType)
     {
-        type = buttonType;
+        type = cellType;
         
         imageContainer = GetComponent<Image>();
     }
@@ -30,12 +30,12 @@ public class ButtonCellView : MonoBehaviour
     {
         switch(type)
         {
-            case ButtonType.Key:
+            case CellType.Key:
                 imageContainer.color = keyColor;
                 keyImageContainer.SetActive(true);
                 break;
         
-            case ButtonType.Bomb:
+            case CellType.Bomb:
                 imageContainer.color = bombColor;
                 SetDisabledButtonColourAlpha(disabledBombAlpha, button);
                 grenadeImage.SetActive(true);
@@ -49,7 +49,7 @@ public class ButtonCellView : MonoBehaviour
     
     public void RevealHiddenKey()
     {
-        if (type != ButtonType.Key)
+        if (type != CellType.Key)
             return;
     
         imageContainer.color = keyColor.WithAlpha(keyAlpha);

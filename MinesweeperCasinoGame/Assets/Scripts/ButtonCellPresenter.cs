@@ -14,7 +14,7 @@ public class ButtonCellPresenter : MonoBehaviour
 
     private bool isRevealed;
     
-    public ButtonType Type { get; private set; }
+    public CellType Type { get; private set; }
 
     private void Awake()
     {
@@ -23,13 +23,13 @@ public class ButtonCellPresenter : MonoBehaviour
         button.onClick.AddListener(OnClicked);
     }
 
-    public void Initialize(ButtonType buttonType, Action onPlayerLoses, Action onPlayerFoundKey)
+    public void Initialize(CellType cellType, Action onPlayerLoses, Action onPlayerFoundKey)
     {
         playerFoundKey = onPlayerFoundKey;
         playerLoses = onPlayerLoses;
         
-        Type = buttonType;
-        view.Initialize(buttonType);
+        Type = cellType;
+        view.Initialize(cellType);
         
         ResetCell();
     }
@@ -43,7 +43,7 @@ public class ButtonCellPresenter : MonoBehaviour
     {
         isRevealed = true;
 
-        if (Type == ButtonType.Bomb)
+        if (Type == CellType.Bomb)
         {
             playerLoses?.Invoke();
         }

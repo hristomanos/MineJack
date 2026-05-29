@@ -1,4 +1,4 @@
-public enum ButtonType
+public enum CellType
 {
     Key, 
     Bomb

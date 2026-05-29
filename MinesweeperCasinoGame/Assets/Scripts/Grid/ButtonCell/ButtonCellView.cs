@@ -1,31 +1,28 @@
-﻿using Unity.VisualScripting;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace Grid.ButtonCell
 {
+    [RequireComponent(typeof(Image))]
     public class ButtonCellView : MonoBehaviour
     {
         [SerializeField] private GameObject grenadeImage;
         [SerializeField] private GameObject keyImageContainer;
         [SerializeField] private Image keyImage;
         [SerializeField] private Image keyBackgroundImage;
-        private Image imageContainer;
+        [SerializeField] private Image cellImage;
     
-        private readonly Color keyColor = Color.green;
-        private readonly Color bombColor = Color.red;
+        [SerializeField] private  Color keyColor = Color.green;
+        [SerializeField] private  Color bombColor = Color.red;
         [SerializeField, Range(0, 1)] private float keyAlpha = 0.4f;
         [SerializeField, Range(0, 1)] private float disabledBombAlpha = 0.9f;
         [SerializeField, Range(0, 1)] private float defaultDisabledAlpha = 0.5f;
-    
-
-        CellType type;
+        
+        private CellType type;
     
         public void Initialize(CellType cellType)
         {
             type = cellType;
-        
-            imageContainer = GetComponent<Image>();
         }
 
         public void RevealSelectedType(Button button)
@@ -33,12 +30,12 @@ namespace Grid.ButtonCell
             switch(type)
             {
                 case CellType.Key:
-                    imageContainer.color = keyColor;
+                    cellImage.color = keyColor;
                     keyImageContainer.SetActive(true);
                     break;
         
                 case CellType.Bomb:
-                    imageContainer.color = bombColor;
+                    cellImage.color = bombColor;
                     SetDisabledButtonColourAlpha(disabledBombAlpha, button);
                     grenadeImage.SetActive(true);
                     break;
@@ -53,30 +50,32 @@ namespace Grid.ButtonCell
         {
             if (type != CellType.Key)
                 return;
-    
-            imageContainer.color = keyColor.WithAlpha(keyAlpha);
-            keyImage.color = keyImage.color.WithAlpha(keyAlpha);
-            keyBackgroundImage.color = keyBackgroundImage.color.WithAlpha(keyAlpha);
+
+            cellImage.color = WithAlpha(keyColor, keyAlpha);
+            keyImage.color = WithAlpha(keyImage.color, keyAlpha);
+            keyBackgroundImage.color = WithAlpha(keyBackgroundImage.color, keyAlpha);
             keyImageContainer.SetActive(true);
         }
     
         private void SetDisabledButtonColourAlpha(float value, Button button)
         {
             var colours = button.colors;
-            colours.disabledColor = colours.disabledColor.WithAlpha(value);
+            colours.disabledColor = WithAlpha(colours.disabledColor, value);
             button.colors = colours;
         }
 
         public void OnReset(Button button)
         {
-            imageContainer.color = Color.white;
+            cellImage.color = Color.white;
             SetDisabledButtonColourAlpha(defaultDisabledAlpha, button);
-        
-            keyImage.color = new Color(keyImage.color.r, keyImage.color.g, keyImage.color.b, 1f);
-            keyBackgroundImage.color = new Color(keyBackgroundImage.color.r, keyBackgroundImage.color.g, keyBackgroundImage.color.b, 1f);
-        
+
+            keyImage.color = WithAlpha(keyImage.color, 1f);
+            keyBackgroundImage.color = WithAlpha(keyBackgroundImage.color, 1f);
+
             keyImageContainer.SetActive(false);
             grenadeImage.SetActive(false);
         }
+
+        private static Color WithAlpha(Color color, float alpha) => new(color.r, color.g, color.b, alpha);
     }
 }

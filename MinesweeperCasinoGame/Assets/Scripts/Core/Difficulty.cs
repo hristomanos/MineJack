@@ -1,8 +1,11 @@
-public enum Difficulty
+namespace Core
 {
-   Easy,
-   Medium, 
-   Hard,
-   Expert,
-   Master
+   public enum Difficulty
+   {
+      Easy,
+      Medium, 
+      Hard,
+      Expert,
+      Master
+   }
 }

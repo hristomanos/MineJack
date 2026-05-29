@@ -1246,6 +1246,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7975936572668486917, guid: 517ff22ad5109e646a50436820522847, type: 3}
+      propertyPath: buttonCellPrefab
+      value: 
+      objectReference: {fileID: 526912419273653197, guid: 939a578d9e0b40f4fa89ca8621e1548e, type: 3}
+    - target: {fileID: 7975936572668486917, guid: 517ff22ad5109e646a50436820522847, type: 3}
       propertyPath: difficultyDropdown
       value: 
       objectReference: {fileID: 1790097108}

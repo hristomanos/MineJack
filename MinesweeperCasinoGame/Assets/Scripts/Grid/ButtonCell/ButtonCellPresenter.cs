@@ -67,6 +67,7 @@ namespace Grid.ButtonCell
 
         private void ResetCell()
         {
+            isRevealed = false;
             view.OnReset(button);
         }
 

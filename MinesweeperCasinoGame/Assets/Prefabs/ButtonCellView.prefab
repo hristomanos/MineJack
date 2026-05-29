@@ -287,10 +287,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccc040e1de5c1b44a885317a04a1612c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grenadeImage: {fileID: 4043178078270338456}
-  keyImageContainer: {fileID: 9020103810537037139}
-  keyImage: {fileID: 2998554033896885263}
-  keyBackgroundImage: {fileID: 2718168331588322933}
   view: {fileID: -3490017781045828764}
 --- !u!114 &-3490017781045828764
 MonoBehaviour:
@@ -308,6 +304,12 @@ MonoBehaviour:
   keyImageContainer: {fileID: 9020103810537037139}
   keyImage: {fileID: 2998554033896885263}
   keyBackgroundImage: {fileID: 2718168331588322933}
+  cellImage: {fileID: 730764028181985531}
+  keyColor: {r: 0, g: 1, b: 0, a: 1}
+  bombColor: {r: 1, g: 0, b: 0, a: 1}
+  keyAlpha: 0.4
+  disabledBombAlpha: 0.9
+  defaultDisabledAlpha: 0.5
 --- !u!1 &7094959960300605111
 GameObject:
   m_ObjectHideFlags: 0

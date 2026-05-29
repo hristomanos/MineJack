@@ -48,7 +48,7 @@ public class GridManager : MonoBehaviour
     private int height = 9;
     private float space = 1.2f;
 
-    private ButtonCell[,] grid;
+    private ButtonCellPresenter[,] grid;
 
     private int currentRow = 0;
 
@@ -65,9 +65,7 @@ public class GridManager : MonoBehaviour
         InitiliaseBaseOffDifficulty();
         GenerateGrid();
     }
-
-   
-
+    
     private void GenerateGrid()
     {
         for(int h = 0; h < height; h++)
@@ -81,21 +79,21 @@ public class GridManager : MonoBehaviour
 
             for(int w = 0; w < width; w++)
             {
-                ButtonCell buttonCell = Instantiate(button, new Vector3(w * space, h * space, 0), Quaternion.identity, currentGridLayoutGroup.transform).GetComponent<ButtonCell>();
+                ButtonCellPresenter buttonCellPresenter = Instantiate(button, new Vector3(w * space, h * space, 0), Quaternion.identity, currentGridLayoutGroup.transform).GetComponent<ButtonCellPresenter>();
 
-                buttonCell.gameObject.SetActive(false);
+                buttonCellPresenter.gameObject.SetActive(false);
 
-                buttonCell.SetInteractable(false);
+                buttonCellPresenter.SetInteractable(false);
 
-                buttonCell.gameObject.SetActive(true);
+                buttonCellPresenter.gameObject.SetActive(true);
 
-                grid[w, h] = buttonCell;
+                grid[w, h] = buttonCellPresenter;
 
-                ButtonType type = bombCellIndices.Contains(w) ? ButtonType.BOMB : ButtonType.KEY;
+                ButtonType type = bombCellIndices.Contains(w) ? ButtonType.Bomb : ButtonType.Key;
 
-                buttonCell.name = $"Cell {w},{h} {type.ToString()}";
+                buttonCellPresenter.name = $"Cell {w},{h} {type.ToString()}";
 
-                buttonCell.Initialize(type, OnGameEnds, OnPlayerFoundKey);
+                buttonCellPresenter.Initialize(type, OnGameEnds, OnPlayerFoundKey);
             }
         }
     }
@@ -168,7 +166,7 @@ public class GridManager : MonoBehaviour
                 break;
         }
 
-        grid = new ButtonCell[width, height];
+        grid = new ButtonCellPresenter[width, height];
     }
 
     private void OnPlayerFoundKey()
@@ -197,7 +195,7 @@ public class GridManager : MonoBehaviour
         {
             for(int w = 0; w < width; w++)
             {
-                grid[w, h].RevealHiddenType();
+                grid[w, h].RevealUnselectedType();
                 grid[w, h].SetInteractable(false);
             }
         }
@@ -236,7 +234,7 @@ public class GridManager : MonoBehaviour
 
             for(int w = 0; w < width; w++)
             {
-                ButtonType type = bombCellIndices.Contains(w) ? ButtonType.BOMB : ButtonType.KEY;
+                ButtonType type = bombCellIndices.Contains(w) ? ButtonType.Bomb : ButtonType.Key;
                 grid[w, h].Initialize(type, OnGameEnds, OnPlayerFoundKey);
                 grid[w, h].SetInteractable(h == currentRow);
                 grid[w, h].name = $"Cell {w},{h} {type.ToString()}";

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Config;
 using UnityEngine;
 using UnityEngine.UI;
-using WebGL;
 
 namespace Core
 {

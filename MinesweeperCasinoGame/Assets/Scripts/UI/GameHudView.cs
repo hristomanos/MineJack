@@ -13,11 +13,11 @@ namespace UI
         [SerializeField] private Button betButton;
         [SerializeField] private TMP_Dropdown difficultyDropdown;
         
+        private Difficulty initialDifficulty;
+        
         public UnityEvent OnBetButtonClickedEvent => betButton.onClick;
         public UnityEvent<int> OnDifficultyChangedEvent => difficultyDropdown.onValueChanged;
-
-        private Difficulty initialDifficulty;
-
+        
         public void Initialize(Difficulty difficulty)
         {
             initialDifficulty = difficulty;

@@ -81,7 +81,5 @@ namespace Core
             CurrentGameState = GameState.GameOver;
             gameHudPresenter.SetInteractable(true);
         }
-
-        
     }
 }

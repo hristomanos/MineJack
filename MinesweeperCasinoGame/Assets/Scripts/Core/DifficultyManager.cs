@@ -22,6 +22,12 @@ namespace Core
 
         public void Initialize()
         {
+            if (difficultySettings == null || difficultySettings.Length == 0)
+            {
+                Debug.LogError("No difficulty settings assigned.", this);
+                return;
+            }
+            
             InstantiateDifficultySettings();
             SetActiveGridLayout(CurrentDifficulty);
         }
@@ -51,6 +57,12 @@ namespace Core
             foreach (var setting in difficultySettings)
             {
                 var gridLayout = Instantiate(setting.gridPrefab, canvas.transform).GetComponent<GridLayoutGroup>();
+
+                if (difficultySettingsDictionary.ContainsKey(setting.difficulty))
+                {
+                    Debug.LogError($"Duplicate difficulty setting: {setting.difficulty}", this);
+                    return;
+                }
                 
                 gridLayoutGoDictionary.Add(setting.difficulty, gridLayout);
                 difficultySettingsDictionary.Add(setting.difficulty, setting);

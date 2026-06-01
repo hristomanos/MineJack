@@ -22,13 +22,13 @@ namespace Grid
         private int bombsPerRow = 1;
         private int currentRow;
         
-        public event Action playerCompletedGrid;
-        public event Action playerHitBomb;
+        public event Action PlayerCompletedGrid;
+        public event Action PlayerHitBomb;
 
         public void Initialize(Action onPlayerCompletedGrid, Action onPlayerHitBomb, DifficultyConfig difficultyConfig, GridLayoutGroup gridLayoutGroup)
         {
-            playerCompletedGrid += onPlayerCompletedGrid;
-            playerHitBomb += onPlayerHitBomb;
+            PlayerCompletedGrid += onPlayerCompletedGrid;
+            PlayerHitBomb += onPlayerHitBomb;
             
             ApplyDifficultySettings(difficultyConfig, gridLayoutGroup);
             GenerateGrid();
@@ -56,7 +56,7 @@ namespace Grid
 
                     buttonCellPresenter.name = $"Cell {column},{row} {type.ToString()}";
 
-                    buttonCellPresenter.Initialize(type, playerHitBomb, OnPlayerFoundKey);
+                    buttonCellPresenter.Initialize(type, PlayerHitBomb, OnPlayerFoundKey);
                 }
             }
         }
@@ -70,7 +70,10 @@ namespace Grid
         
             currentDifficulty = difficultyManager.CurrentDifficulty;
         
-            ApplyDifficultySettings(difficultyManager.CurrentDifficultyConfig, difficultyManager.CurrentGridLayoutGroup);
+            ApplyDifficultySettings(
+                difficultyManager.CurrentDifficultyConfig,
+                difficultyManager.CurrentGridLayoutGroup);
+            
             GenerateGrid();
         }
     
@@ -110,7 +113,7 @@ namespace Grid
 
             if(currentRow >= height)
             {
-                playerCompletedGrid?.Invoke();
+                PlayerCompletedGrid?.Invoke();
                 return;
             }
 
@@ -154,7 +157,7 @@ namespace Grid
                 for(int column = 0; column < width; column++)
                 {
                     CellType type = bombCellIndices.Contains(column) ? CellType.Bomb : CellType.Key;
-                    grid[column, row].Initialize(type, playerHitBomb, OnPlayerFoundKey);
+                    grid[column, row].Initialize(type, PlayerHitBomb, OnPlayerFoundKey);
                     grid[column, row].name = $"Cell {column},{row} {type.ToString()}";
                 }
             }

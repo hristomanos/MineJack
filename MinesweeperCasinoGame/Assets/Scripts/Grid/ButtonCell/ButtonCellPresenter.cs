@@ -43,8 +43,14 @@ namespace Grid.ButtonCell
 
         private void OnClicked()
         {
+            if (isRevealed)
+                return;
+            
             isRevealed = true;
-
+            button.interactable = false;
+            
+            view.RevealSelectedType(button);
+            
             if (Type == CellType.Bomb)
             {
                 playerLoses?.Invoke();
@@ -53,8 +59,6 @@ namespace Grid.ButtonCell
             {
                 playerFoundKey?.Invoke();
             }
-
-            view.RevealSelectedType(button);
         }
 
         public void RevealUnselectedType()

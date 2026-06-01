@@ -1,4 +1,3 @@
-using System;
 using Grid;
 using UI;
 using UnityEngine;
@@ -12,12 +11,7 @@ namespace Core
         [SerializeField] private GridManager gridManager;
         [SerializeField] private DifficultyManager difficultyManager;
         
-        //Owns the game state
         public GameState CurrentGameState { get; private set; } = GameState.WaitingToStart;
-        
-        //Starts the game
-        //Ends the game
-        //Determines if the game is over
         
         private void Start()
         {
@@ -25,7 +19,22 @@ namespace Core
             gameHudPresenter.OnDifficultyChangedEvent.AddListener(OnDifficultyChanged);
             
             difficultyManager.Initialize();
-            gridManager.Initialize(OnPlayerCompletedGrid,OnPlayerHitBomb,difficultyManager.CurrentDifficultyConfig,difficultyManager.CurrentGridLayoutGroup);
+            
+            gameHudPresenter.Initialize(difficultyManager.CurrentDifficulty);
+            gridManager.Initialize(
+                OnPlayerCompletedGrid,
+                OnPlayerHitBomb,
+                difficultyManager.CurrentDifficultyConfig,
+                difficultyManager.CurrentGridLayoutGroup);
+        }
+        
+        private void OnDestroy()
+        {
+            if (gameHudPresenter == null)
+                return;
+            
+            gameHudPresenter.OnBetButtonClickedEvent.RemoveListener(StartGame);
+            gameHudPresenter.OnDifficultyChangedEvent.RemoveListener(OnDifficultyChanged);
         }
 
         private void StartGame()
@@ -55,16 +64,16 @@ namespace Core
         private void OnPlayerHitBomb()
         {
             Debug.Log("Player Lost!");
-            EndGame(false);
+            EndGame();
         }
 
         private void OnPlayerCompletedGrid()
         {
             Debug.Log("Player Wins!");
-            EndGame(true);
+            EndGame();
         }
     
-        private void EndGame(bool playerWon)
+        private void EndGame()
         {
             gridManager.RevealGrid();
             gridManager.SetGridInteractable(false);
@@ -73,13 +82,6 @@ namespace Core
             gameHudPresenter.SetInteractable(true);
         }
 
-        private void OnDestroy()
-        {
-            if (gameHudPresenter == null)
-                return;
-            
-            gameHudPresenter.OnBetButtonClickedEvent.RemoveListener(StartGame);
-            gameHudPresenter.OnDifficultyChangedEvent.RemoveListener(OnDifficultyChanged);
-        }
+        
     }
 }

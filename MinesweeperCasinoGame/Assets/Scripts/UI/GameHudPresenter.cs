@@ -12,13 +12,15 @@ namespace UI
         public UnityEvent OnBetButtonClickedEvent => view.OnBetButtonClickedEvent;
         public UnityEvent<int> OnDifficultyChangedEvent => view.OnDifficultyChangedEvent;
         
-        private Difficulty initialDifficulty = Difficulty.Easy;
-        
         private void Awake()
         {
             if (view == null) 
                 view = GetComponent<GameHudView>();
             
+        }
+        
+        public void Initialize(Difficulty initialDifficulty)
+        {
             view.Initialize(initialDifficulty);
         }
 

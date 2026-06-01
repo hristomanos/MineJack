@@ -49,7 +49,6 @@ namespace Core
             
             gridManager.EnableCurrentRow();
             gameHudPresenter.SetInteractable(false);
-            WebGLBridge.NotifyGameStarted();
         }
         
         private void OnDifficultyChanged(int difficultyIndex)

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: afb3962917bd80740937adb8fca25a9d
+guid: eed8a2a54e9b2fa47b54d8183beef7ea
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8992919794962309687
-    second: Medium_0
+      213: -6122455098680662301
+    second: wooden_background_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Medium_0
+      name: wooden_background_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1918
-        height: 1059
+        width: 4503
+        height: 3156
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9cd51bfc71bb23380800000000000000
-      internalID: -8992919794962309687
+      spriteID: 3e62cd1a68ba80ba0800000000000000
+      internalID: -6122455098680662301
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Medium_0: -8992919794962309687
+      wooden_background_0: -6122455098680662301
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

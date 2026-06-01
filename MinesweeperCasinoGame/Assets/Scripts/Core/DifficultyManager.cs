@@ -48,7 +48,6 @@ namespace Core
             CurrentDifficulty = selectedDifficulty;
             SetActiveGridLayout(CurrentDifficulty);
             
-            WebGLBridge.NotifyDifficultySelected(selectedDifficulty);
             return true;
         }
         

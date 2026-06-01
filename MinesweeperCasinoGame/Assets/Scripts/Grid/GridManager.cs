@@ -1,39 +1,35 @@
+using System;
 using System.Collections.Generic;
 using Config;
 using Core;
 using Grid.ButtonCell;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 namespace Grid
 {
     public class GridManager : MonoBehaviour
     {
-        [SerializeField] private TMP_Dropdown difficultyDropdown;
-        [SerializeField] private Button betButton;
-
-        [SerializeField] private GameObject canvas;
-        [SerializeField] DifficultyConfig[] difficultySettings;
         [SerializeField] private ButtonCellPresenter buttonCellPrefab;
         
+        private ButtonCellPresenter[,] grid;
         private GridLayoutGroup currentGridLayoutGroup;
-
-        private int bombsPerRow = 1;
-
         private Difficulty currentDifficulty = Difficulty.Easy;
 
         private int width;
         private int height;
-
-        private ButtonCellPresenter[,] grid;
-
+        private int bombsPerRow = 1;
         private int currentRow;
+        
+        public event Action playerCompletedGrid;
+        public event Action playerHitBomb;
 
-        private GameState currentGameState = GameState.WaitingToStart;
-
-        public void Initialize(DifficultyConfig difficultyConfig, GridLayoutGroup gridLayoutGroup)
+        public void Initialize(Action onPlayerCompletedGrid, Action onPlayerHitBomb, DifficultyConfig difficultyConfig, GridLayoutGroup gridLayoutGroup)
         {
+            playerCompletedGrid += onPlayerCompletedGrid;
+            playerHitBomb += onPlayerHitBomb;
+            
             ApplyDifficultySettings(difficultyConfig, gridLayoutGroup);
             GenerateGrid();
         }
@@ -60,7 +56,7 @@ namespace Grid
 
                     buttonCellPresenter.name = $"Cell {column},{row} {type.ToString()}";
 
-                    buttonCellPresenter.Initialize(type, OnPlayerHitBomb, OnPlayerFoundKey);
+                    buttonCellPresenter.Initialize(type, playerHitBomb, OnPlayerFoundKey);
                 }
             }
         }
@@ -74,7 +70,7 @@ namespace Grid
         
             currentDifficulty = difficultyManager.CurrentDifficulty;
         
-            ApplyDifficultySettings(difficultyManager.CurrentDifficultyConfig, currentGridLayoutGroup);
+            ApplyDifficultySettings(difficultyManager.CurrentDifficultyConfig, difficultyManager.CurrentGridLayoutGroup);
             GenerateGrid();
         }
     
@@ -87,22 +83,7 @@ namespace Grid
             }
         }
 
-        public void OnBetButtonClicked()
-        {
-            if (currentGameState == GameState.Playing)
-                return;
-            
-            difficultyDropdown.interactable = false;
-            betButton.interactable = false;
-
-            if(currentGameState == GameState.GameOver)
-                ResetGrid();
-
-            currentGameState = GameState.Playing;
-            SetOnlyCurrentRowInteractable();
-        }
-
-        private void SetOnlyCurrentRowInteractable()
+        public void EnableCurrentRow()
         {
             for(int row = 0; row < height; row++)
             {
@@ -129,36 +110,14 @@ namespace Grid
 
             if(currentRow >= height)
             {
-                OnPlayerCompletedGrid();
+                playerCompletedGrid?.Invoke();
                 return;
             }
 
-            SetOnlyCurrentRowInteractable();
+            EnableCurrentRow();
         }
 
-        private void OnPlayerHitBomb()
-        {
-            Debug.Log("Player Lost!");
-            EndGame(false);
-        }
-
-        private void OnPlayerCompletedGrid()
-        {
-            Debug.Log("Player Wins!");
-            EndGame(true);
-        }
-    
-        private void EndGame(bool playerWon)
-        {
-            RevealGrid();
-            SetGridInteractable(false);
-
-            currentGameState = GameState.GameOver;
-            difficultyDropdown.interactable = true;
-            betButton.interactable = true;
-        }
-
-        private void RevealGrid()
+        public void RevealGrid()
         {
             for(int row = 0; row < height; row++)
             {
@@ -169,7 +128,7 @@ namespace Grid
             }
         }
 
-        private void SetGridInteractable(bool interactable)
+        public void SetGridInteractable(bool interactable)
         {
             for(int row = 0; row < height; row++)
             {
@@ -185,7 +144,7 @@ namespace Grid
             return Random.Range(0, width);
         }
 
-        private void ResetGrid()
+        public void ResetGrid()
         {
             currentRow = 0;
             for(int row = 0; row < height; row++)
@@ -195,12 +154,12 @@ namespace Grid
                 for(int column = 0; column < width; column++)
                 {
                     CellType type = bombCellIndices.Contains(column) ? CellType.Bomb : CellType.Key;
-                    grid[column, row].Initialize(type, OnPlayerHitBomb, OnPlayerFoundKey);
+                    grid[column, row].Initialize(type, playerHitBomb, OnPlayerFoundKey);
                     grid[column, row].name = $"Cell {column},{row} {type.ToString()}";
                 }
             }
         
-            SetOnlyCurrentRowInteractable();
+            EnableCurrentRow();
         }
 
         private HashSet<int> GenerateBombCellIndices()

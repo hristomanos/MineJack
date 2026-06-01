@@ -16,7 +16,16 @@ namespace UI
         
         private void Awake()
         {
+            if (view == null) 
+                view = GetComponent<GameHudView>();
+            
             view.Initialize(initialDifficulty);
+        }
+
+        public void SetInteractable(bool interactable)
+        {
+            view.SetBetButtonInteractable(interactable);
+            view.SetDifficultyDropdownInteractable(interactable);
         }
     }
 }

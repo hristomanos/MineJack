@@ -23,24 +23,27 @@ namespace Core
         public void Initialize()
         {
             InstantiateDifficultySettings();
+            SetActiveGridLayout(CurrentDifficulty);
         }
-
-        public void SelectDifficulty(int index)
+        
+        public bool TrySelectDifficulty(int index)
         {
             if (Enum.IsDefined(typeof(Difficulty), index) == false)
             {
                 Debug.LogError($"Invalid difficulty index: {index}");
-                return;
+                return false;
             }
             
             var selectedDifficulty = (Difficulty) index;
             
             if (CurrentDifficulty == selectedDifficulty)
-                return;
+                return false;
             
             CurrentDifficulty = selectedDifficulty;
+            SetActiveGridLayout(CurrentDifficulty);
             
             WebGLBridge.NotifyDifficultySelected(selectedDifficulty);
+            return true;
         }
         
         private void InstantiateDifficultySettings()
@@ -51,6 +54,14 @@ namespace Core
                 
                 gridLayoutGoDictionary.Add(setting.difficulty, gridLayout);
                 difficultySettingsDictionary.Add(setting.difficulty, setting);
+            }
+        }
+        
+        private void SetActiveGridLayout(Difficulty difficulty)
+        {
+            foreach (var (key, value) in gridLayoutGoDictionary)
+            {
+                value.gameObject.SetActive(key == difficulty);
             }
         }
     }

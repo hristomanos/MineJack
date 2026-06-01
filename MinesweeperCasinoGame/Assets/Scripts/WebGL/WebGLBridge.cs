@@ -14,7 +14,7 @@ namespace WebGL
     private static extern void StartGame();
 
     [DllImport("__Internal")]
-    private static extern void SelectDifficulty(int difficulty);
+    private static extern void SelectDifficulty(Difficulty difficulty);
 #endif
         public static void NotifyGameStarted()
         {
@@ -25,12 +25,12 @@ namespace WebGL
 #endif
         }
 
-        public static void NotifyDifficultySelected(int difficulty)
+        public static void NotifyDifficultySelected(Difficulty difficulty)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
             SelectDifficulty(difficulty);
 #else
-            Debug.Log($"Would notify JavaScript: Difficulty Selected: {(Difficulty) difficulty}");
+            Debug.Log($"Would notify JavaScript: Difficulty Selected: {difficulty}");
 #endif
         }
     }

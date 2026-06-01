@@ -1,41 +1,21 @@
 using System.Collections.Generic;
-using System.Linq;
 using Config;
 using Core;
 using Grid.ButtonCell;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using WebGL;
 
 namespace Grid
 {
     public class GridManager : MonoBehaviour
     {
-        private void StartGame()
-        {
-            OnBetButtonClicked();
-            WebGLBridge.NotifyGameStarted();
-        }
-    
-        private void SelectDifficulty(int num)
-        {
-            OnDifficultyChanged(num);
-            WebGLBridge.NotifyDifficultySelected(num);
-        }
-        
-        [SerializeField] private ButtonCellPresenter buttonCellPrefab;
-       
-
         [SerializeField] private TMP_Dropdown difficultyDropdown;
         [SerializeField] private Button betButton;
 
         [SerializeField] private GameObject canvas;
         [SerializeField] DifficultyConfig[] difficultySettings;
-        
-        
-        private Dictionary<Difficulty, DifficultyConfig> difficultySettingsDictionary = new();
-        private Dictionary<Difficulty, GridLayoutGroup> gridLayoutDictionary = new();
+        [SerializeField] private ButtonCellPresenter buttonCellPrefab;
         
         private GridLayoutGroup currentGridLayoutGroup;
 
@@ -44,23 +24,17 @@ namespace Grid
         private Difficulty currentDifficulty = Difficulty.Easy;
 
         private int width;
-        private int height = 9;
+        private int height;
 
         private ButtonCellPresenter[,] grid;
 
-        private int currentRow = 0;
+        private int currentRow;
 
         private GameState currentGameState = GameState.WaitingToStart;
 
-        private void Awake()
+        public void Initialize(DifficultyConfig difficultyConfig, GridLayoutGroup gridLayoutGroup)
         {
-            var optionsList = new List<string> { "Easy", "Medium", "Hard", "Expert", "Master" };
-            difficultyDropdown.AddOptions(optionsList);
-            difficultyDropdown.value = (int) currentDifficulty;
-            difficultyDropdown.onValueChanged.AddListener(SelectDifficulty);
-            betButton.onClick.AddListener(StartGame);
-            InstantiateDifficultySettings();
-            ApplyDifficultySettings();
+            ApplyDifficultySettings(difficultyConfig, gridLayoutGroup);
             GenerateGrid();
         }
     
@@ -74,7 +48,11 @@ namespace Grid
                 {
                     var buttonCellPresenter = Instantiate(buttonCellPrefab, currentGridLayoutGroup.transform);
 
+                    buttonCellPresenter.gameObject.SetActive(false);
+                    
                     buttonCellPresenter.SetInteractable(false);
+                    
+                    buttonCellPresenter.gameObject.SetActive(true);
 
                     grid[column, row] = buttonCellPresenter;
 
@@ -87,24 +65,16 @@ namespace Grid
             }
         }
 
-        public void OnDifficultyChanged(int index)
+        public void OnDifficultyChanged(DifficultyManager difficultyManager)
         {
-            if (System.Enum.IsDefined(typeof(Difficulty), index) == false)
-            {
-                Debug.LogError($"Invalid difficulty index: {index}");
-                return;
-            }
-            
-            Difficulty selectedDifficulty = (Difficulty)index;
-
-            if (selectedDifficulty == currentDifficulty)
+            if (difficultyManager.CurrentDifficulty == currentDifficulty)
                 return;
 
             ClearGrid();
         
-            currentDifficulty = selectedDifficulty;
+            currentDifficulty = difficultyManager.CurrentDifficulty;
         
-            ApplyDifficultySettings();
+            ApplyDifficultySettings(difficultyManager.CurrentDifficultyConfig, currentGridLayoutGroup);
             GenerateGrid();
         }
     
@@ -125,7 +95,7 @@ namespace Grid
             difficultyDropdown.interactable = false;
             betButton.interactable = false;
 
-            if(currentGameState == GameState.GameOver) 
+            if(currentGameState == GameState.GameOver)
                 ResetGrid();
 
             currentGameState = GameState.Playing;
@@ -142,26 +112,13 @@ namespace Grid
                 }
             }
         }
-
-        private void InstantiateDifficultySettings()
-        {
-            foreach (var setting in difficultySettings)
-            {
-                var gridLayout = Instantiate(setting.gridPrefab, canvas.transform).GetComponent<GridLayoutGroup>();
-                
-                gridLayoutDictionary.Add(setting.difficulty, gridLayout);
-                difficultySettingsDictionary.Add(setting.difficulty, setting);
-            }
-        }
         
-        private void ApplyDifficultySettings()
+        private void ApplyDifficultySettings(DifficultyConfig difficultyConfig, GridLayoutGroup gridLayoutGroup)
         {
-            var settings = difficultySettingsDictionary[currentDifficulty];
-            
-            currentGridLayoutGroup = gridLayoutDictionary[currentDifficulty];
-            width = settings.width;
-            height = settings.height;
-            bombsPerRow = settings.bombsPerRow;
+            currentGridLayoutGroup = gridLayoutGroup;
+            width = difficultyConfig.width;
+            height = difficultyConfig.height;
+            bombsPerRow = difficultyConfig.bombsPerRow;
 
             grid = new ButtonCellPresenter[width, height];
         }
@@ -228,7 +185,7 @@ namespace Grid
             return Random.Range(0, width);
         }
 
-        public void ResetGrid()
+        private void ResetGrid()
         {
             currentRow = 0;
             for(int row = 0; row < height; row++)
